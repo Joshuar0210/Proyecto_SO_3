@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" prefHeight="557.0" prefWidth="848.0" spacing="20.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.mavenproject6.PrimaryController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <children>
+      <Pane prefHeight="515.0" prefWidth="744.0" style="-fx-background-color: #336699;">
+         <children>
+            <Button fx:id="btnAddFile" layoutX="21.0" layoutY="423.0" mnemonicParsing="false" onAction="#HandleAddFile" prefHeight="27.0" prefWidth="115.0" style="-fx-background-color: BLACK;" text="CARGAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Button fx:id="btnGetFile" layoutX="150.0" layoutY="423.0" mnemonicParsing="false" onAction="#HandleGetFile" prefHeight="27.0" prefWidth="106.0" style="-fx-background-color: black;" text="DESCARGAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Button fx:id="btnUpdate" layoutX="271.0" layoutY="423.0" mnemonicParsing="false" onAction="#HandleUpdate" prefHeight="27.0" prefWidth="97.0" style="-fx-background-color: black;" text="RENOMBRAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Button fx:id="btnDeleteFile" layoutX="381.0" layoutY="423.0" mnemonicParsing="false" onAction="#HandleDeleteFile" prefHeight="27.0" prefWidth="97.0" style="-fx-background-color: black;" text="ELIMINAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+
+            <TableView fx:id="tableFiles" layoutX="21.0" layoutY="65.0" onMouseClicked="#HandleItemSelected" prefHeight="342.0" prefWidth="772.0">
+               <columns>
+                  <TableColumn fx:id="colNombre" prefWidth="452.0" text="Nombre" />
+                  <TableColumn fx:id="colTamano" prefWidth="103.0" text="Tamaño (bytes)" />
+                  <TableColumn fx:id="colFecha" prefWidth="212.0" text="Última Modificación" />
+               </columns>
+            </TableView>
+
+            <Label fx:id="lblNotification" alignment="TOP_LEFT" layoutX="23.0" layoutY="13.0" prefHeight="44.0" prefWidth="486.0" text="NOTIFICACIÓN:" textFill="WHITE" wrapText="true">
+               <font>
+                  <Font name="Tahoma Bold" size="14.0" />
+               </font>
+            </Label>
+            <TextField fx:id="txtFileName" layoutX="21.0" layoutY="460.0" prefHeight="25.0" prefWidth="457.0" promptText="Nombre del archivo seleccionado" />
+            <Button fx:id="btnCancele" layoutX="708.0" layoutY="479.0" mnemonicParsing="false" onAction="#HandleCancele" prefHeight="25.0" prefWidth="86.0" style="-fx-background-color: #cc3300;" text="CANCELAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <ProgressBar fx:id="prgBar" layoutX="21.0" layoutY="494.0" prefHeight="14.0" prefWidth="457.0" progress="0.0" />
+            <Button fx:id="btnRefresh" layoutX="608.0" layoutY="479.0" mnemonicParsing="false" onAction="#handleRefresh" prefHeight="25.0" prefWidth="86.0" style="-fx-background-color: #009933;" text="REFRESCAR" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <TextField fx:id="txtBuscar" layoutX="526.0" layoutY="24.0" prefHeight="25.0" prefWidth="264.0" promptText="Buscar archivo..." />
+         </children>
+      </Pane>
+   </children>
+</VBox>
