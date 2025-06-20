@@ -47,18 +47,31 @@ Este proyecto implementa un sistema distribuido de almacenamiento y manipulació
 /Proyect_SO_3
 │
 ├── com.mycompany.mavenproject6
+
 │ ├── PrimaryController.java
+
 │ ├── ServidorMaestro.java
+
 │ ├── ServidorEsclavo1.java
+
 │ ├── ServidorEsclavo2.java
+
 | ├── ServidorEsclavo3.java
+
 ├── model
+
 │ └── FileInfo.java
+
 ├── esclavo1/
+
 │ └── archivos_guardados/
+
 ├── esclavo2/
+
 │ └── archivos_guardados/
+
 ├── esclavo3/
+
 │ └── archivos_guardados/
 
 
