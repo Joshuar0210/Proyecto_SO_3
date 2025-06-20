@@ -1,0 +1,10 @@
+com\mycompany\mavenproject6\App.class
+com\mycompany\mavenproject6\net\Client.class
+com\mycompany\mavenproject6\ServidorEsclavo3.class
+com\mycompany\mavenproject6\net\Client$ProgressCallback.class
+model\FileInfo.class
+com\mycompany\mavenproject6\ServidorMaestro.class
+com\mycompany\mavenproject6\PrimaryController.class
+com\mycompany\mavenproject6\ServidorEsclavo2.class
+module-info.class
+com\mycompany\mavenproject6\ServidorEsclavo1.class

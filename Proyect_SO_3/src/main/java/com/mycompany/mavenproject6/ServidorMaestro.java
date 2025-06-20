@@ -25,13 +25,13 @@ public class ServidorMaestro {
     public static void main(String[] args) {
         conectarConEsclavos();
         try (ServerSocket ss = new ServerSocket(PUERTO_MAESTRO)) {
-            log("🟢 Maestro escuchando en %d", PUERTO_MAESTRO);
+            log("Maestro escuchando en %d", PUERTO_MAESTRO);
             while (true) {
                 Socket cliente = ss.accept();
                 pool.execute(() -> manejarCliente(cliente));
             }
         } catch (IOException ex) {
-            logErr("❌ Error maestro: %s", ex.getMessage());
+            logErr("Error maestro: %s", ex.getMessage());
         }
     }
 
@@ -51,14 +51,13 @@ public class ServidorMaestro {
             Socket s = new Socket(HOSTS[idx], PUERTOS[idx]);
             esclavos.set(idx, s);
             DataInputStream in = new DataInputStream(s.getInputStream());
-            log("🔁 Esclavo %d dice: %s", idx + 1, in.readUTF());
+            log(" Esclavo %d dice: %s", idx + 1, in.readUTF());
         } catch (IOException ex) {
             esclavos.set(idx, null);
-            logErr("⚠️ No se reconectó esclavo %d: %s", idx + 1, ex.getMessage());
+            logErr(" No se reconectó esclavo %d: %s", idx + 1, ex.getMessage());
         }
     }
 
-    // ------------------------------------------------ cliente handler --------
     private static void manejarCliente(Socket cli) {
         try (cli; DataInputStream in = new DataInputStream(cli.getInputStream()); DataOutputStream out = new DataOutputStream(cli.getOutputStream())) {
             while (true) {
@@ -85,17 +84,16 @@ public class ServidorMaestro {
                         handleEliminar(in, out);
                         break;
                     default:
-                        out.writeUTF("❌ Cmd no válido");
+                        out.writeUTF("Cmd no válido");
                         out.flush();
                         break;
                 }
             }
         } catch (IOException ex) {
-            logErr("❌ Cliente error: %s", ex.getMessage());
+            logErr("Cliente error: %s", ex.getMessage());
         }
     }
 
-    // ------------------------------------------------ comandos ---------------
     private static void handleUpload(DataInputStream in, DataOutputStream out) throws IOException {
         String nombre = in.readUTF();
         long len = in.readLong();
@@ -106,7 +104,7 @@ public class ServidorMaestro {
         sendToSlave(1, nombre + ".part2", Arrays.copyOfRange(data, slice, 2 * slice));
         sendToSlave(2, nombre + ".part3", Arrays.copyOfRange(data, 2 * slice, data.length));
 
-        out.writeUTF("✅ Subido");
+        out.writeUTF("Subido");
         out.flush();
     }
 
@@ -154,7 +152,7 @@ private static void handleListar(DataOutputStream out) throws IOException {
                 }
             }
         } catch (IOException e) {
-            logErr("⚠️ Fallo esclavo %d: %s", i + 1, e.getMessage());
+            logErr("Fallo esclavo %d: %s", i + 1, e.getMessage());
         }
     }
 
@@ -176,7 +174,7 @@ private static void handleListar(DataOutputStream out) throws IOException {
         for (int i = 0; i < NUM_ESCLAVOS; i++) {
             ok &= renameOnSlave(i, o, n);
         }
-        out.writeUTF(ok ? "✅ Renombrado" : "❌ Falló renombrar");
+        out.writeUTF(ok ? "Renombrado" : "Falló renombrar");
         out.flush();
     }
 
@@ -186,11 +184,10 @@ private static void handleListar(DataOutputStream out) throws IOException {
         for (int i = 0; i < NUM_ESCLAVOS; i++) {
             ok &= deleteOnSlave(i, base);
         }
-        out.writeUTF(ok ? "✅ Eliminado" : "❌ Falló eliminar");
+        out.writeUTF(ok ? "Eliminado" : "Falló eliminar");
         out.flush();
     }
 
-    // ------------------------------------------------ helpers esclavo --------
     private static synchronized void sendToSlave(int idx, String name, byte[] data) {
         try {
             Socket s = ensureSlave(idx);
@@ -204,9 +201,9 @@ private static void handleListar(DataOutputStream out) throws IOException {
             os.writeLong(data.length);
             os.write(data);
             os.flush();
-            is.readUTF(); // consume ACK
+            is.readUTF(); 
         } catch (IOException ex) {
-            logErr("❌ send esclavo %d: %s", idx + 1, ex.getMessage());
+            logErr("Send esclavo %d: %s", idx + 1, ex.getMessage());
         }
     }
 
@@ -224,7 +221,7 @@ private static void handleListar(DataOutputStream out) throws IOException {
             long len = is.readLong();
             return is.readNBytes((int) len);
         } catch (IOException ex) {
-            logErr("❌ request esclavo %d: %s", idx + 1, ex.getMessage());
+            logErr("Request esclavo %d: %s", idx + 1, ex.getMessage());
             return new byte[0];
         }
     }
@@ -241,9 +238,9 @@ private static void handleListar(DataOutputStream out) throws IOException {
             os.writeUTF(o);
             os.writeUTF(n);
             os.flush();
-            return is.readUTF().startsWith("✅");
+            return is.readUTF().startsWith("Partes renombradas correctamente");
         } catch (IOException ex) {
-            logErr("❌ rename esclavo %d: %s", idx + 1, ex.getMessage());
+            logErr("Rename esclavo %d: %s", idx + 1, ex.getMessage());
             return false;
         }
     }
@@ -259,9 +256,9 @@ private static void handleListar(DataOutputStream out) throws IOException {
             os.writeUTF("eliminar");
             os.writeUTF(b);
             os.flush();
-            return is.readUTF().startsWith("✅");
+            return is.readUTF().startsWith("Partes");
         } catch (IOException ex) {
-            logErr("❌ eliminar esclavo %d: %s", idx + 1, ex.getMessage());
+            logErr("eliminar esclavo %d: %s", idx + 1, ex.getMessage());
             return false;
         }
     }
@@ -275,7 +272,6 @@ private static void handleListar(DataOutputStream out) throws IOException {
         return s;
     }
 
-    // ------------------------------------------------ logging ----------------
     private static void log(String fmt, Object... args) {
         System.out.printf("[INFO] " + fmt + "%n", args);
     }

@@ -37,7 +37,7 @@ public class PrimaryController {
     @FXML private TextField txtBuscar;
     @FXML private Button btnCancele;
 
-    private final String servidorHost = "25.44.210.169";
+    private final String servidorHost = "localhost";
     private final int servidorPuerto = 8000;
 
     private ObservableList<FileInfo> listaArchivos = FXCollections.observableArrayList();
@@ -207,72 +207,96 @@ public class PrimaryController {
         });
         currentTaskThread.start();
     }
+private void subirArchivo(File archivo, String nombreOriginal) throws IOException {
+    Socket socket = null;
+    try {
+        socket = new Socket(servidorHost, servidorPuerto);
+        DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+        DataInputStream in = new DataInputStream(socket.getInputStream());
+        FileInputStream fis = new FileInputStream(archivo);
 
-    private void subirArchivo(File archivo, String nombreOriginal) throws IOException {
-        try (Socket socket = new Socket(servidorHost, servidorPuerto);
-             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-             DataInputStream in = new DataInputStream(socket.getInputStream());
-             FileInputStream fis = new FileInputStream(archivo)) {
+        out.writeUTF("UPLOAD");
+        out.writeUTF(nombreOriginal);
+        long fileSize = archivo.length();
+        out.writeLong(fileSize);
 
-            out.writeUTF("UPLOAD");
-            out.writeUTF(nombreOriginal);
-            long fileSize = archivo.length();
-            out.writeLong(fileSize);
+        byte[] buffer = new byte[100];
+        int bytesRead;
+        long totalSent = 0;
 
-            byte[] buffer = new byte[100];
-            int bytesRead;
-            long totalSent = 0;
+        while ((bytesRead = fis.read(buffer)) != -1) {
+            if (Thread.currentThread().isInterrupted()) {
+                fis.close();
+                out.close();
+                in.close();
+                socket.close();
 
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new IOException("Transferencia cancelada por el usuario.");
-                }
-                out.write(buffer, 0, bytesRead);
-                totalSent += bytesRead;
-                double progress = (double) totalSent / fileSize;
-                double finalProgress = progress;
-                Platform.runLater(() -> prgBar.setProgress(finalProgress));
+                eliminarArchivo(nombreOriginal); 
+                throw new IOException("Transferencia cancelada por el usuario. Fragmentos eliminados en servidor.");
             }
-            out.flush();
 
-            String respuesta = in.readUTF();
-            if (!respuesta.startsWith("✅")) {
-                throw new IOException(respuesta);
-            }
+            out.write(buffer, 0, bytesRead);
+            totalSent += bytesRead;
+            double progress = (double) totalSent / fileSize;
+            double finalProgress = progress;
+            Platform.runLater(() -> prgBar.setProgress(finalProgress));
         }
-    }
 
-    private void descargarArchivo(String nombreArchivo, File destino) throws IOException {
-        try (Socket socket = new Socket(servidorHost, servidorPuerto);
-             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-             DataInputStream in = new DataInputStream(socket.getInputStream());
-             FileOutputStream fos = new FileOutputStream(destino)) {
-
-            out.writeUTF("DOWNLOAD");
-            out.writeUTF(nombreArchivo);
-            out.flush();
-
-            String nombreRecibido = in.readUTF();
-            long tamano = in.readLong();
-
-            byte[] buffer = new byte[100];
-            long totalRead = 0;
-            int bytesRead;
-
-            while (totalRead < tamano &&
-                    (bytesRead = in.read(buffer, 0, (int) Math.min(buffer.length, tamano - totalRead))) != -1) {
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new IOException("Descarga cancelada por el usuario.");
-                }
-                fos.write(buffer, 0, bytesRead);
-                totalRead += bytesRead;
-                double progress = (double) totalRead / tamano;
-                double finalProgress = progress;
-                Platform.runLater(() -> prgBar.setProgress(finalProgress));
-            }
-            fos.flush();
+        out.flush();
+        String respuesta = in.readUTF();
+        if (!respuesta.startsWith("Subido")) {
+            throw new IOException(respuesta);
         }
+
+        fis.close();
+        out.close();
+        in.close();
+        socket.close();
+
+    } catch (IOException e) {
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
+        throw e;
     }
+}
+
+ private void descargarArchivo(String nombreArchivo, File destino) throws IOException {
+    try (Socket socket = new Socket(servidorHost, servidorPuerto);
+         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+         DataInputStream in = new DataInputStream(socket.getInputStream());
+         FileOutputStream fos = new FileOutputStream(destino)) {
+
+        out.writeUTF("DOWNLOAD");
+        out.writeUTF(nombreArchivo);
+        out.flush();
+
+        String nombreRecibido = in.readUTF();
+        long tamano = in.readLong();
+
+        byte[] buffer = new byte[100];
+        long totalRead = 0;
+        int bytesRead;
+
+        while (totalRead < tamano &&
+                (bytesRead = in.read(buffer, 0, (int) Math.min(buffer.length, tamano - totalRead))) != -1) {
+            if (Thread.currentThread().isInterrupted()) {
+                fos.close(); 
+                destino.delete(); 
+                throw new IOException("Descarga cancelada. Archivo parcial eliminado.");
+            }
+            fos.write(buffer, 0, bytesRead);
+            totalRead += bytesRead;
+            double progress = (double) totalRead / tamano;
+            double finalProgress = progress;
+            Platform.runLater(() -> prgBar.setProgress(finalProgress));
+        }
+        fos.flush();
+    } catch (IOException e) {
+        destino.delete(); 
+        throw e;
+    }
+}
 
     private boolean renombrarArchivo(String original, String nuevo) throws IOException {
         prgBar.setProgress(0);
@@ -286,7 +310,7 @@ public class PrimaryController {
             out.flush();
 
             String respuesta = in.readUTF();
-            return respuesta.startsWith("✅");
+            return respuesta.startsWith("Renombrado");
         }
     }
 
@@ -301,7 +325,7 @@ public class PrimaryController {
             out.flush();
 
             String respuesta = in.readUTF();
-            return respuesta.startsWith("✅");
+            return respuesta.startsWith("Eliminado");
         }
     }
 
