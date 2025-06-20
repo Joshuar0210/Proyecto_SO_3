@@ -83,3 +83,7 @@ Este proyecto implementa un sistema distribuido de almacenamiento y manipulació
 
 2. **Ejecutar el servidor maestro:**
    Se ejecuta el servidor maestro para aceptar las conexiones de los servidores esclavos y de clientes
+
+
+3. **Ejecutar el cliente:**
+   Se ejecuta el cliente para establecer conexion con el servidor maestro
