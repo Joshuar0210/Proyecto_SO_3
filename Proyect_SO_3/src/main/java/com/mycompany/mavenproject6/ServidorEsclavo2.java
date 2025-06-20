@@ -10,26 +10,27 @@ import java.nio.file.Paths;
 public class ServidorEsclavo2 {
 
     public static void main(String[] args) {
-        int puerto = 8002; 
-        String nombreDirectorio = "esclavo2"; 
+        int puerto = 8002; // Cambiar por 8001, 8002 o 8003
+        String nombreDirectorio = "esclavo2"; // Cambiar por "esclavo1", "esclavo2" o "esclavo3"
 
         try (ServerSocket server = new ServerSocket(puerto)) {
-            System.out.println("Esclavo esperando conexión en puerto " + puerto);
+            System.out.println("🟡 Esclavo esperando conexión en puerto " + puerto);
 
             Socket maestro = server.accept();
-            System.out.println("Conectado al maestro");
+            System.out.println("🔗 Conectado al maestro");
 
             DataInputStream entrada = new DataInputStream(new BufferedInputStream(maestro.getInputStream()));
             DataOutputStream salida = new DataOutputStream(new BufferedOutputStream(maestro.getOutputStream()));
 
+            // Enviar confirmación al maestro
             salida.writeUTF("Esclavo listo");
             salida.flush();
 
             while (true) {
-                System.out.println("Esperando orden...");
+                System.out.println("⌛ Esperando orden...");
 
                 String orden = entrada.readUTF();
-                System.out.println("Orden recibida: " + orden);
+                System.out.println("📨 Orden recibida: " + orden);
 
                 Path directorio = Paths.get(nombreDirectorio, "archivos_guardados");
                 Files.createDirectories(directorio);
@@ -46,7 +47,7 @@ public class ServidorEsclavo2 {
                         Path ruta = directorio.resolve(nombreArchivo);
                         Files.write(ruta, contenido);
 
-                        System.out.println("Archivo guardado: " + nombreArchivo + " (" + tamano + " bytes)");
+                        System.out.println("📥 Archivo guardado: " + nombreArchivo + " (" + tamano + " bytes)");
                         salida.writeUTF("Archivo recibido exitosamente.");
                         salida.flush();
                         break;
@@ -71,27 +72,25 @@ public class ServidorEsclavo2 {
                         break;
                     }
 
-                    
-
-                      case "listar": {
+                   case "listar": {
     File[] archivos = directorio.toFile().listFiles((dir, name) -> name.matches(".*\\.part\\d+$"));
     if (archivos != null) {
         salida.writeInt(archivos.length);
         for (File archivo : archivos) {
             salida.writeUTF(archivo.getName());
             salida.writeLong(archivo.length());
-            salida.writeLong(archivo.lastModified()); 
+            salida.writeLong(archivo.lastModified()); // milisegundos
         }
     } else {
         salida.writeInt(0);
     }
     salida.flush();
-    System.out.println("Lista de archivos enviada.");
+    System.out.println("📃 Lista de archivos enviada.");
     break;
 }
 
 
-                    case "renombrar": {
+                  case "renombrar": {
     String originalBase = entrada.readUTF();
     String nuevoBase = entrada.readUTF();
 
@@ -103,6 +102,7 @@ public class ServidorEsclavo2 {
             String nombre = archivo.getName();
 
             if (nombre.startsWith(originalBase) && nombre.matches(".*\\.part\\d+$")) {
+                // Extraer la extensión antes de .partX
                 int indexPart = nombre.lastIndexOf(".part");
                 int indexPunto = nombre.lastIndexOf('.', indexPart - 1);
 
@@ -111,23 +111,22 @@ public class ServidorEsclavo2 {
                     extension = nombre.substring(indexPunto + 1, indexPart);
                 }
 
-                String sufijo = nombre.substring(indexPart); 
+                String sufijo = nombre.substring(indexPart); // .partX
                 String nuevoNombre = nuevoBase + "." + extension + sufijo;
 
                 Path origen = archivo.toPath();
                 Path destino = directorio.resolve(nuevoNombre);
                 Files.move(origen, destino);
-                System.out.println("Renombrado: " + nombre + " → " + nuevoNombre);
+                System.out.println("✏️ Renombrado: " + nombre + " → " + nuevoNombre);
                 renombrado = true;
             }
         }
     }
 
-    salida.writeUTF(renombrado ? "Partes renombradas correctamente." : "No se encontraron partes para renombrar.");
+    salida.writeUTF(renombrado ? "✅ Partes renombradas correctamente." : "❌ No se encontraron partes para renombrar.");
     salida.flush();
     break;
 }
-
 
                     case "eliminar": {
                         String baseEliminar = entrada.readUTF();
@@ -140,21 +139,21 @@ public class ServidorEsclavo2 {
                                 String nombre = archivo.getName();
                                 if (nombre.startsWith(baseEliminar) && nombre.matches(".*\\.part\\d+$")) {
                                     if (archivo.delete()) {
-                                        System.out.println("Eliminado: " + nombre);
+                                        System.out.println("🗑️ Eliminado: " + nombre);
                                         eliminado = true;
                                     } else {
-                                        System.out.println("No se pudo eliminar: " + nombre);
+                                        System.out.println("⚠️ No se pudo eliminar: " + nombre);
                                     }
                                 }
                             }
                         }
-                        salida.writeUTF(eliminado ? "Partes eliminadas correctamente." : "No se encontraron partes para eliminar.");
+                        salida.writeUTF(eliminado ? "✅ Partes eliminadas correctamente." : "❌ No se encontraron partes para eliminar.");
                         salida.flush();
                         break;
                     }
 
                     default:
-                        System.out.println("Orden desconocida: " + orden);
+                        System.out.println("⚠️ Orden desconocida: " + orden);
                         salida.writeUTF("Orden no reconocida.");
                         salida.flush();
                         break;
@@ -162,7 +161,7 @@ public class ServidorEsclavo2 {
             }
 
         } catch (IOException e) {
-            System.err.println("Error en esclavo: " + e.getMessage());
+            System.err.println("❌ Error en esclavo: " + e.getMessage());
         }
     }
 }
