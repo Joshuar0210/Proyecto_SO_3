@@ -39,7 +39,7 @@ Este proyecto implementa un sistema distribuido de almacenamiento y manipulació
 
 - Java 17 o superior
 - JavaFX (compatible con tu versión de JDK)
-- Maven (opcional, si deseas empaquetar con `pom.xml`)
+- Maven (opcional, si  se deseas empaquetar con `pom.xml`)
 - Conexión TCP entre los componentes
 
 ## Estructura del Proyecto
